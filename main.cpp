@@ -6,6 +6,8 @@ private:
 	T* data;
 	int* ref_count;
 
+	// check_free decreases the count of references to the underlying data
+	// and frees the resourses if the count is zero
 	void check_free() {
 		if (--(*ref_count) == 0) {
 			std::cout << "freeing " << *this << std::endl;
@@ -15,18 +17,21 @@ private:
 			ref_count = nullptr;
 		}
 	}
+
 public:
 	explicit SP(T* _data): data(_data), ref_count(new int(1)) {
 		std::cout << "creating " << *this << std::endl;
 	}
 	
+	// copy constructor
 	SP(const SP& copy): data(copy.data), ref_count(copy.ref_count) {
 		std::cout << "copying " << copy << " to " << *this << std::endl;
 		if (ref_count != nullptr) {
 			++(*ref_count);
 		}
 	}
-
+	
+	// assignment copy operator
 	SP& operator=(const SP& copy) {
 		std::cout << "copying " << copy << " to " << *this << std::endl;
 		check_free();
@@ -37,8 +42,11 @@ public:
 		}
 		return *this;
 	}
-
+	
+	// dereference operatorreturns dereference of underlying data
 	T& operator*() const { return *data; }
+
+	// -> orerator returns underlying data
 	T* operator->() const { return data; }
 
 	~SP() {
@@ -83,11 +91,14 @@ int main() {
 	{
 		SP<A> b(new A(2));
 		b->greet();
+		// end of block, A(2) should be deleted
 	}
 	{
 		SP<A> c(new A(3));
 		c->greet();
 		a = c;
+		// at this moment A(1) should be deleted
+		// since there is no more references to a
 		c->greet();
 		a->greet();
 	}
